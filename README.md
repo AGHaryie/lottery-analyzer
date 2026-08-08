@@ -62,6 +62,7 @@ The analyzer supports both **single-column space-separated strings** and **multi
 Draw Date, Winning Numbers, Multiplier
 08/05/2026, 14 20 48 54 61 04, 03
 08/03/2026, 08 30 41 48 54 14, 02
+```
 
 ### Format B: Multi-Column Headers
 In this format, each drawn ball is separated into distinct numeric columns:
