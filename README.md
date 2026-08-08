@@ -62,3 +62,81 @@ The analyzer supports both **single-column space-separated strings** and **multi
 Draw Date, Winning Numbers, Multiplier
 08/05/2026, 14 20 48 54 61 04, 03
 08/03/2026, 08 30 41 48 54 14, 02
+
+### Format B: Multi-Column Headers
+In this format, each drawn ball is separated into distinct numeric columns:
+
+```csv
+Draw Date, Num1, Num2, Num3, Num4, Num5, Mega Ball
+08/04/2026, 04, 18, 26, 43, 70, 21
+08/01/2026, 12, 18, 33, 43, 65, 11
+```
+
+### Data Sanitization Pipeline
+Any row containing out-of-range numbers ($> \text{Max White Ball}$ or $> \text{Max Bonus Ball}$), non-numeric characters, or incorrect ball counts is safely isolated and logged in the Upload Sanitization Log banner without disrupting valid dataset processing.
+
+## 🛠️ Tech Stack & Architecture
+
+```text
+src/app/
+├── components/
+│   ├── Header.tsx
+│   ├── CustomMatrixSettings.tsx
+│   ├── DashboardControls.tsx
+│   ├── AnalyticsMetrics.tsx
+│   ├── FrequencyChart.tsx
+│   └── CandidateTickets.tsx
+├── lib/
+│   ├── lotteryEngine.ts
+│   └── csvParser.ts
+└── page.tsx
+```
+
+- **Framework:** Next.js 14 (App Router)
+- **Language:** TypeScript
+- **Styling:** Tailwind CSS + Lucide Icons
+- **Data Visualization:** Recharts
+- **CSV Parsing:** PapaParse
+
+## 🚀 Getting Started
+
+### Prerequisites
+
+- **Node.js:** `v18.0.0` or higher
+- **npm** or **yarn**
+
+### Local Setup
+
+1. **Clone the repository:**
+
+```bash
+git clone https://github.com/your-username/lottery-statistical-analyzer.git
+cd lottery-statistical-analyzer
+```
+
+2. **Install dependencies:**
+
+```bash
+npm install
+```
+
+3. **Run the development server:**
+
+```bash
+npm run dev
+```
+
+4. **Open in browser:**
+
+Navigate to http://localhost:3000/
+
+## 🧪 Automated Testing
+To execute automated CSV parsing test suites and verify production builds:
+
+```bash
+# Run unit test suite
+npm run test
+
+# Perform production build check
+npm run build
+```
