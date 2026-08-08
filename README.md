@@ -2,7 +2,7 @@
 
 A high-performance, web-based statistical engine and combinatorial ticket generator for multi-ball lottery matrices (Powerball, Mega Millions, and Custom Game Rules). Built with **Next.js 14**, **React**, **TypeScript**, **Tailwind CSS**, and **Recharts**.
 
-🚀 **Live Demo:** [https://vercel.com/agharyies-projects/lottery-analyzer](https://vercel.com/agharyies-projects/lottery-analyzer)
+🚀 **Live Demo:** [[https://vercel.com/agharyies-projects/lottery-analyzer](https://vercel.com/agharyies-projects/lottery-analyzer)](https://lottery-analyzer-nine.vercel.app/)
 
 ---
 
