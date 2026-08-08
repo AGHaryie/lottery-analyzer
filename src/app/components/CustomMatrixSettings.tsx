@@ -15,7 +15,7 @@ export const CustomMatrixSettings: React.FC<CustomMatrixSettingsProps> = ({
   onChange,
 }) => {
   return (
-    <div className="bg-slate-900 border border-slate-800 p-4 rounded-xl space-y-3">
+    <div className="bg-slate-900 border border-slate-800 p-4 rounded-xl space-y-3 shadow-md">
       <div className="flex items-center justify-between text-sm font-semibold text-indigo-400">
         <div className="flex items-center gap-2">
           <Settings className="w-4 h-4" /> Custom Matrix Configuration

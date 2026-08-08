@@ -30,7 +30,7 @@ export interface AnalysisResult {
 
 export const GAME_RULES: Record<GameType, GameRules> = {
   POWERBALL: { whiteCount: 5, whiteMax: 69, bonusMax: 26, highThreshold: 35 },
-  MEGA_MILLIONS: { whiteCount: 5, whiteMax: 70, bonusMax: 24, highThreshold: 36 },
+  MEGA_MILLIONS: { whiteCount: 5, whiteMax: 70, bonusMax: 25, highThreshold: 36 },
   CUSTOM: { whiteCount: 3, whiteMax: 10, bonusMax: 5, highThreshold: 5 },
 };
 

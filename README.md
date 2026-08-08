@@ -1,36 +1,64 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# 🎰 Lottery Statistical Analyzer & Ticket Generator
 
-## Getting Started
+A high-performance, web-based statistical engine and combinatorial ticket generator for multi-ball lottery matrices (Powerball, Mega Millions, and Custom Game Rules). Built with **Next.js 14**, **React**, **TypeScript**, **Tailwind CSS**, and **Recharts**.
 
-First, run the development server:
+---
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+## 📌 Executive Overview
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+The **Lottery Statistical Analyzer** evaluates historical lottery draw datasets (via CSV upload) to detect statistical imbalances, frequency spectrum distribution, and parity ratios. 
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+Using weighted probability sampling and historical gap tracking, the engine filters out statistically improbable extreme combinations (such as all-low or all-even picks) and generates balanced candidate tickets matching real-world draw distributions.
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+---
 
-## Learn More
+## 🎯 Primary Evaluation Parameters & Metrics
 
-To learn more about Next.js, take a look at the following resources:
+The system analyzes uploaded draw histories across six core statistical parameters:
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+### 1. High/Low Boundary Balance
+* **Definition:** Divides the white ball pool into two equal halves based on the mathematical midpoint threshold:
+  $$\text{Midpoint Threshold} = \left\lceil \frac{\text{Max White Ball}}{2} \right\rceil$$
+* **Powerball ($1\text{–}69$):** Threshold $\ge 35$ (High: $35\text{–}69$, Low: $1\text{–}34$)
+* **Mega Millions ($1\text{–}70$):** Threshold $\ge 36$ (High: $36\text{–}70$, Low: $1\text{–}35$)
+* **Statistical Target:** Historical draw combinations align with a Gaussian distribution, where $\approx 80\%$ of winning draws fall into balanced $3\text{ High} / 2\text{ Low}$ or $2\text{ High} / 3\text{ Low}$ splits.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+### 2. Odd / Even Parity Ratio
+* Tracks the percentage breakdown of odd versus even numbers drawn across all evaluated draws to verify natural random distribution.
 
-## Deploy on Vercel
+### 3. Frequency Spectrum (Hot & Cold Balls)
+* **Hot Balls:** Top $N$ most frequently drawn numbers in the dataset.
+* **Cold Balls:** Top $N$ least frequently drawn numbers in the dataset.
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+### 4. Overdue Gap Analysis
+* Tracks the draw gap count (how many consecutive draws have elapsed since a specific number was last selected) to highlight cold numbers that are overdue for variance rebound.
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+### 5. Sum Range & Averages
+* Calculates the sum total of white balls for each historical draw, tracking minimums, maximums, and overall moving averages to prevent generating combinations with sums outside normal statistical bell curves.
+
+### 6. Consecutive Pair Tracking
+* Monitors the frequency of adjacent consecutive numbers (e.g., $14, 15$) occurring in the same draw.
+
+---
+
+## 🕹️ Supported Game Matrices
+
+| Game Mode | Balls Drawn | Max White Ball ($1..N$) | Max Bonus Ball ($1..M$) | Auto High/Low Threshold |
+| :--- | :---: | :---: | :---: | :---: |
+| **Powerball** | $5$ | $69$ | $26$ | $\ge 35$ |
+| **Mega Millions** | $5$ | $70$ | $25$ | $\ge 36$ |
+| **Custom Matrix** | Configurable ($1\text{--}10$) | Configurable ($10\text{--}100$) | Configurable ($1\text{--}50$) | Auto Calculated ($\lceil N/2 \rceil$) |
+
+---
+
+## 📄 CSV Format & Sanitization Rules
+
+The analyzer supports both **single-column space-separated strings** and **multi-column header formats**.
+
+### Supported CSV Formats
+
+#### Format A: Single Combined Column
+```csv
+Draw Date, Winning Numbers, Multiplier
+08/05/2026, 14 20 48 54 61 04, 03
+08/03/2026, 08 30 41 48 54 14, 02

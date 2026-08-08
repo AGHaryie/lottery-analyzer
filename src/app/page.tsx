@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import { GameType, GameRules, GAME_RULES, analyzeDraws, generateCombinations, AnalysisResult } from '@/app/lib/lotteryEngine';
+import { GameType, GameRules, GAME_RULES, analyzeDraws, generateCombinations, AnalysisResult, DrawData } from '@/app/lib/lotteryEngine';
 import { parseLotteryCSV } from '@/app/lib/csvParser';
 import { AlertCircle } from 'lucide-react';
 
@@ -15,6 +15,7 @@ import { CandidateTickets } from '@/app/components/CandidateTickets';
 export default function Home() {
   const [game, setGame] = useState<GameType>('POWERBALL');
   const [count, setCount] = useState<number>(5);
+  const [uploadedFileName, setUploadedFileName] = useState<string | null>(null);
   
   const [rawCustom, setRawCustom] = useState<{ whiteCount: number; whiteMax: number; bonusMax: number }>({
     whiteCount: 3,
@@ -36,26 +37,91 @@ export default function Home() {
   const [tickets, setTickets] = useState<Array<{ whiteBalls: number[]; bonusBall: number; sum: number }>>([]);
   const [errorLogs, setErrorLogs] = useState<string[]>([]);
 
-  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
+  const processCSVContent = (content: string, fileName?: string) => {
+    const { data, errors } = parseLotteryCSV(content, game, activeRules);
 
+    setErrorLogs(errors);
+    if (data.length > 0) {
+      if (fileName) setUploadedFileName(fileName);
+      const stats = analyzeDraws(data, game, activeRules);
+      setAnalysis(stats);
+      setTickets(generateCombinations(stats, game, count, activeRules));
+    } else {
+      setAnalysis(null);
+      setTickets([]);
+    }
+  };
+
+  const handleFileUpload = (file: File) => {
     const reader = new FileReader();
     reader.onload = (event) => {
       const content = event.target?.result as string;
-      const { data, errors } = parseLotteryCSV(content, game, activeRules);
-
-      setErrorLogs(errors);
-      if (data.length > 0) {
-        const stats = analyzeDraws(data, game, activeRules);
-        setAnalysis(stats);
-        setTickets(generateCombinations(stats, game, count, activeRules));
-      } else {
-        setAnalysis(null);
-        setTickets([]);
-      }
+      processCSVContent(content, file.name);
     };
     reader.readAsText(file);
+  };
+
+  const handleLoadDemoData = () => {
+  let demoCSV = '';
+
+  if (game === 'POWERBALL') {
+    demoCSV =
+      `Draw Date, Winning Numbers, Multiplier\n` +
+      `08/05/2026, 14 20 48 54 61 04, 03\n` +
+      `08/03/2026, 08 30 41 48 54 14, 02\n` +
+      `08/01/2026, 06 17 27 48 50 05, 03\n` +
+      `07/29/2026, 10 30 40 48 57 02, 04\n` +
+      `07/27/2026, 14 20 30 54 68 18, 02\n` +
+      `07/25/2026, 03 12 25 48 61 14, 05\n` +
+      `07/22/2026, 10 20 30 41 50 04, 02\n` +
+      `07/20/2026, 08 14 27 48 69 22, 03\n`;
+  } else if (game === 'MEGA_MILLIONS') {
+    demoCSV =
+      `Draw Date, Num1, Num2, Num3, Num4, Num5, Mega Ball, Megaplier\n` +
+      `08/04/2026, 04, 18, 26, 43, 70, 21, 02\n` +
+      `08/01/2026, 12, 18, 33, 43, 65, 11, 03\n` +
+      `07/28/2026, 04, 22, 38, 43, 70, 21, 04\n` +
+      `07/25/2026, 09, 18, 26, 51, 68, 05, 02\n` +
+      `07/21/2026, 04, 18, 33, 43, 70, 21, 03\n` +
+      `07/18/2026, 12, 26, 38, 51, 65, 11, 05\n` +
+      `07/14/2026, 04, 18, 26, 43, 70, 08, 02\n` +
+      `07/11/2026, 09, 22, 33, 51, 68, 21, 03\n`;
+  } else {
+    // Dynamically generate headers & valid rows based on whatever Custom Matrix is configured
+    const whiteHeaders = Array.from(
+      { length: activeRules.whiteCount },
+      (_, i) => `Num${i + 1}`
+    ).join(', ');
+    
+    demoCSV = `Draw Date, ${whiteHeaders}, Bonus Ball\n`;
+
+    // Generate 8 valid mock draws strictly inside activeRules boundaries
+    for (let row = 1; row <= 8; row++) {
+      const drawnSet = new Set<number>();
+      while (drawnSet.size < activeRules.whiteCount) {
+        const num = Math.floor(Math.random() * activeRules.whiteMax) + 1;
+        drawnSet.add(num);
+      }
+      const sortedWhites = Array.from(drawnSet)
+        .sort((a, b) => a - b)
+        .map((n) => (n < 10 ? `0${n}` : `${n}`))
+        .join(', ');
+
+      const bonus = Math.floor(Math.random() * activeRules.bonusMax) + 1;
+      const formattedBonus = bonus < 10 ? `0${bonus}` : `${bonus}`;
+
+      demoCSV += `08/0${row}/2026, ${sortedWhites}, ${formattedBonus}\n`;
+    }
+  }
+
+  processCSVContent(demoCSV, `${game.toLowerCase()}_demo.csv`);
+};
+
+  const handleClearData = () => {
+    setAnalysis(null);
+    setTickets([]);
+    setErrorLogs([]);
+    setUploadedFileName(null);
   };
 
   const handleGenerate = () => {
@@ -90,7 +156,7 @@ export default function Home() {
       <div className="max-w-5xl mx-auto space-y-6">
         <Header
           game={game}
-          onSelectGame={(g) => { setGame(g); setAnalysis(null); setTickets([]); }}
+          onSelectGame={(g) => { setGame(g); handleClearData(); }}
         />
 
         {game === 'CUSTOM' && (
@@ -106,8 +172,11 @@ export default function Home() {
           count={count}
           activeRules={activeRules}
           hasAnalysis={!!analysis}
+          uploadedFileName={uploadedFileName}
           onFileUpload={handleFileUpload}
           onDownloadTemplate={handleDownloadTemplate}
+          onLoadDemoData={handleLoadDemoData}
+          onClearData={handleClearData}
           onCountChange={setCount}
           onGenerate={handleGenerate}
           totalDraws={analysis?.totalDraws}
